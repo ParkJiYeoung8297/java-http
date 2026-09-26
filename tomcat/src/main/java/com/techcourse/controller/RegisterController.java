@@ -1,7 +1,8 @@
-package org.apache.coyote.http11.handler;
+package com.techcourse.controller;
 
 import com.techcourse.db.InMemoryUserRepository;
 import com.techcourse.model.User;
+import org.apache.catalina.controller.AbstractController;
 import org.apache.coyote.http11.HttpRequest;
 import org.apache.coyote.http11.HttpResponse;
 import org.apache.coyote.http11.enums.HttpStatus;
@@ -10,27 +11,24 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class RegisterRequestHandler implements RequestHandler{
-    private static final Logger log = LoggerFactory.getLogger(LoginRequestHandler.class);
+public class RegisterController extends AbstractController {
+    private static final Logger log = LoggerFactory.getLogger(RegisterController.class);
 
     @Override
-    public HttpResponse handle(HttpRequest httpRequest){
-        final HttpResponse response = new HttpResponse();
+    protected void doPost(HttpRequest request, HttpResponse response) throws Exception {
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         String location = "/500.html";
 
         try{
-            register(httpRequest.params());
+            register(request.params());
             location = "/index.html";
             response.setStatus(HttpStatus.SEE_OTHER);
             log.info("계정 : {}, 이메일 : {} 회원가입 완료",
-                    httpRequest.params().get("account"), httpRequest.params().get("email"));
+                    request.params().get("account"), request.params().get("email"));
         } catch (IllegalArgumentException e){
         }
 
         response.addHeader("Location", location);
-
-        return response;
     }
 
     private void register(Map<String,String> params){
@@ -40,5 +38,10 @@ public class RegisterRequestHandler implements RequestHandler{
 
         InMemoryUserRepository.save(
                 new User(params.get("account"), params.get("password"), params.get("email")));
+    }
+
+    @Override
+    protected void doGet(HttpRequest request, HttpResponse response) throws Exception{
+
     }
 }

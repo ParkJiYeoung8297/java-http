@@ -1,9 +1,11 @@
-package org.apache.coyote.http11;
+package com.techcourse.controller;
+
+import org.apache.coyote.http11.HttpRequest;
+import org.apache.coyote.http11.HttpResponse;
 
 import com.techcourse.db.InMemoryUserRepository;
 import org.apache.coyote.http11.enums.HttpMethod;
 import org.apache.coyote.http11.enums.HttpStatus;
-import org.apache.coyote.http11.handler.RegisterRequestHandler;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -11,18 +13,19 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RegisterRequestHandlerTest {
+class RegisterControllerTest {
 
     @Test
-    void 새로운_회원이면_저장하고_인덱스_페이지로_리다이렉트한다() {
+    void 새로운_회원이면_저장하고_인덱스_페이지로_리다이렉트한다() throws Exception {
         // given
         final String account = "account-" + UUID.randomUUID();
-        final RegisterRequestHandler registerRequestHandler =
-                new RegisterRequestHandler();
+        final RegisterController registerController =
+                new RegisterController();
         final HttpRequest request = createRegisterRequest(account);
 
         // when
-        final HttpResponse response = registerRequestHandler.handle(request);
+        final HttpResponse response = new HttpResponse();
+        registerController.service(request, response);
 
         // then
         assertThat(response.status()).isEqualTo(HttpStatus.SEE_OTHER);
@@ -33,14 +36,15 @@ class RegisterRequestHandlerTest {
     }
 
     @Test
-    void 이미_가입한_계정이면_500_페이지로_이동한다() {
+    void 이미_가입한_계정이면_500_페이지로_이동한다() throws Exception {
         // given
-        final RegisterRequestHandler registerRequestHandler =
-                new RegisterRequestHandler();
+        final RegisterController registerController =
+                new RegisterController();
         final HttpRequest request = createRegisterRequest("gugu");
 
         // when
-        final HttpResponse response = registerRequestHandler.handle(request);
+        final HttpResponse response = new HttpResponse();
+        registerController.service(request, response);
 
         // then
         assertThat(response.status())

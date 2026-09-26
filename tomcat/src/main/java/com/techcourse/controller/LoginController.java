@@ -1,9 +1,10 @@
-package org.apache.coyote.http11.handler;
+package com.techcourse.controller;
 
 import com.techcourse.db.InMemoryUserRepository;
 import com.techcourse.model.User;
 import org.apache.catalina.Session;
 import org.apache.catalina.SessionManager;
+import org.apache.catalina.controller.AbstractController;
 import org.apache.coyote.http11.HttpCookie;
 import org.apache.coyote.http11.HttpRequest;
 import org.apache.coyote.http11.HttpResponse;
@@ -14,25 +15,22 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.UUID;
 
-public class LoginRequestHandler implements RequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(LoginRequestHandler.class);
+public class LoginController extends AbstractController {
+    private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 
     @Override
-    public HttpResponse handle(HttpRequest httpRequest) {
-        final HttpResponse response = new HttpResponse();
+    protected void doPost(HttpRequest request, HttpResponse response) throws Exception {
         response.setStatus(HttpStatus.FOUND);
         String location = "/index.html";
 
         try {
-            login(httpRequest, response);
+            login(request, response);
         } catch (IllegalArgumentException e) {
             location = "/401.html";
             response.setStatus(HttpStatus.SEE_OTHER);
         }
 
         response.addHeader("Location", location);
-
-        return response;
     }
 
     private void login(HttpRequest httpRequest, HttpResponse response) {
@@ -84,5 +82,40 @@ public class LoginRequestHandler implements RequestHandler {
 
         SessionManager.getInstance().add(session);
         return sessionId;
+    }
+
+
+
+    @Override
+    protected void doGet(HttpRequest request, HttpResponse response) throws Exception{
+        response.setStatus(HttpStatus.OK);
+
+        if (isLoggedIn(request)) {
+            response.addHeader("Location", "/index.html");
+        }
+    }
+
+    private boolean isLoggedIn(HttpRequest httpRequest) {
+        final HttpCookie cookie = new HttpCookie(
+                httpRequest.headers().getOrDefault("cookie", "")
+        );
+
+        try {
+            final String sessionId = cookie.getSessionId();
+            final SessionManager sessionManager = SessionManager.getInstance();
+
+            if (!sessionManager.isExistSession(sessionId)) {
+                return false;
+            }
+
+            final Session session = sessionManager.findSession(sessionId);
+            return getUser(session) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private User getUser(Session session) {
+        return (User) session.getAttribute("user");
     }
 }

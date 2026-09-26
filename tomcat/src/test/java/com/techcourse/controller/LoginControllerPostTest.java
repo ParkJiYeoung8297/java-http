@@ -1,26 +1,29 @@
-package org.apache.coyote.http11;
+package com.techcourse.controller;
+
+import org.apache.coyote.http11.HttpRequest;
+import org.apache.coyote.http11.HttpResponse;
 
 import org.apache.coyote.http11.enums.HttpMethod;
 import org.apache.coyote.http11.enums.HttpStatus;
-import org.apache.coyote.http11.handler.LoginRequestHandler;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class LoginRequestHandlerTest {
+class LoginControllerPostTest {
 
     @Test
-    void 올바른_계정과_비밀번호면_302를_반환한다() {
+    void 올바른_계정과_비밀번호면_302를_반환한다() throws Exception {
         // given
-        final LoginRequestHandler loginRequestHandler =
-                new LoginRequestHandler();
+        final LoginController loginController =
+                new LoginController();
 
         final HttpRequest request = createLoginRequest("gugu", "password");
 
         // when
-        final HttpResponse response = loginRequestHandler.handle(request);
+        final HttpResponse response = new HttpResponse();
+        loginController.service(request, response);
 
         // then
         assertThat(response.status())
@@ -30,15 +33,16 @@ class LoginRequestHandlerTest {
     }
 
     @Test
-    void 비밀번호가_일치하지_않으면_401_페이지로_리다이렉트한다() {
+    void 비밀번호가_일치하지_않으면_401_페이지로_리다이렉트한다() throws Exception {
         // given
-        final LoginRequestHandler loginRequestHandler =
-                new LoginRequestHandler();
+        final LoginController loginController =
+                new LoginController();
 
         final HttpRequest request = createLoginRequest("gugu", "wrong-password");
 
         // when
-        final HttpResponse response = loginRequestHandler.handle(request);
+        final HttpResponse response = new HttpResponse();
+        loginController.service(request, response);
 
         // then
         assertThat(response.status())

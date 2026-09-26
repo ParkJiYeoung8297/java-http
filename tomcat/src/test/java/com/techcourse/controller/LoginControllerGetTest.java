@@ -1,11 +1,13 @@
-package org.apache.coyote.http11;
+package com.techcourse.controller;
+
+import org.apache.coyote.http11.HttpRequest;
+import org.apache.coyote.http11.HttpResponse;
 
 import com.techcourse.model.User;
 import org.apache.catalina.Session;
 import org.apache.catalina.SessionManager;
 import org.apache.coyote.http11.enums.HttpMethod;
 import org.apache.coyote.http11.enums.HttpStatus;
-import org.apache.coyote.http11.handler.LoginPageHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +15,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class LoginPageHandlerTest {
+class LoginControllerGetTest {
 
     private Session session;
 
@@ -25,13 +27,14 @@ class LoginPageHandlerTest {
     }
 
     @Test
-    void 로그인하지_않은_사용자에게_로그인_페이지를_응답한다() {
+    void 로그인하지_않은_사용자에게_로그인_페이지를_응답한다() throws Exception {
         // given
-        final LoginPageHandler loginPageHandler = new LoginPageHandler();
+        final LoginController loginController = new LoginController();
         final HttpRequest request = createRequest(Map.of());
 
         // when
-        final HttpResponse response = loginPageHandler.handle(request);
+        final HttpResponse response = new HttpResponse();
+        loginController.service(request, response);
 
         // then
         assertThat(response.status()).isEqualTo(HttpStatus.OK);
@@ -39,7 +42,7 @@ class LoginPageHandlerTest {
     }
 
     @Test
-    void 로그인한_사용자에게_인덱스_페이지_위치를_응답한다() {
+    void 로그인한_사용자에게_인덱스_페이지_위치를_응답한다() throws Exception {
         // given
         session = new Session("login-page-session");
         session.setAttribute(
@@ -48,13 +51,14 @@ class LoginPageHandlerTest {
         );
         SessionManager.getInstance().add(session);
 
-        final LoginPageHandler loginPageHandler = new LoginPageHandler();
+        final LoginController loginController = new LoginController();
         final HttpRequest request = createRequest(Map.of(
                 "cookie", "JSESSIONID=" + session.getId()
         ));
 
         // when
-        final HttpResponse response = loginPageHandler.handle(request);
+        final HttpResponse response = new HttpResponse();
+        loginController.service(request, response);
 
         // then
         assertThat(response.status()).isEqualTo(HttpStatus.OK);
@@ -63,15 +67,16 @@ class LoginPageHandlerTest {
     }
 
     @Test
-    void 유효하지_않은_세션이면_로그인_페이지를_응답한다() {
+    void 유효하지_않은_세션이면_로그인_페이지를_응답한다() throws Exception {
         // given
-        final LoginPageHandler loginPageHandler = new LoginPageHandler();
+        final LoginController loginController = new LoginController();
         final HttpRequest request = createRequest(Map.of(
                 "cookie", "JSESSIONID=unknown-session"
         ));
 
         // when
-        final HttpResponse response = loginPageHandler.handle(request);
+        final HttpResponse response = new HttpResponse();
+        loginController.service(request, response);
 
         // then
         assertThat(response.status()).isEqualTo(HttpStatus.OK);

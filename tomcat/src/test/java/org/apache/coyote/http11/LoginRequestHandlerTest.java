@@ -23,7 +23,7 @@ class LoginRequestHandlerTest {
         final HttpResponse response = loginRequestHandler.handle(request);
 
         // then
-        assertThat(response.httpStatus())
+        assertThat(response.status())
                 .isEqualTo(HttpStatus.FOUND);
         assertThat(response.headers())
                 .containsEntry("Location", "/index.html");
@@ -41,7 +41,7 @@ class LoginRequestHandlerTest {
         final HttpResponse response = loginRequestHandler.handle(request);
 
         // then
-        assertThat(response.httpStatus())
+        assertThat(response.status())
                 .isEqualTo(HttpStatus.SEE_OTHER);
         assertThat(response.headers())
                 .containsEntry("Location", "/401.html");

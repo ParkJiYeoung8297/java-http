@@ -7,11 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HttpResponseWriter {
-    public String write(HttpRequest httpRequest, HttpResponse httpResponse, byte[] responseBody) {
+    public String write(HttpRequest httpRequest, HttpResponse httpResponse) {
         StringBuilder response = new StringBuilder();
         String responseLine = mergeResponseLine(httpRequest, httpResponse);
-        String header = mergeHeader(httpRequest, httpResponse, responseBody);
-        String body = new String(responseBody, StandardCharsets.UTF_8);
+        String header = mergeHeader(httpRequest, httpResponse, httpResponse.responseBody());
+        String body = new String(httpResponse.responseBody(), StandardCharsets.UTF_8);
 
         response.append(responseLine)
                 .append(" \r\n")

@@ -59,13 +59,13 @@ public class Http11Processor implements Runnable, Processor {
             }
 
             final var responseBody = createResponseBody(responsePath);
+            httpResponse.setResponseBody(responseBody);
             final HttpResponseWriter httpResponseWriter = new HttpResponseWriter();
-            String response = httpResponseWriter.write(httpRequest, httpResponse, responseBody);
-            
+            String response = httpResponseWriter.write(httpRequest, httpResponse);
+
             log.info("mehtod: {} , path: {}, http status: {}",
                     httpRequest.httpMethod(), responsePath, httpResponse.httpStatus().getMessage());
 
-            System.out.println(response);
             outputStream.write(response.getBytes());
             outputStream.flush();
         } catch (IOException | URISyntaxException | UncheckedServletException e) {
@@ -77,7 +77,7 @@ public class Http11Processor implements Runnable, Processor {
         final RequestHandler requestHandler = handlers.get(new Route(request.httpMethod(), request.path()));
 
         if (requestHandler == null) {
-            return new HttpResponse(HttpStatus.OK, new HashMap<>(),"");
+            return new HttpResponse(HttpStatus.OK, new HashMap<>(), new byte[0]);
         }
 
         return requestHandler.handle(request);

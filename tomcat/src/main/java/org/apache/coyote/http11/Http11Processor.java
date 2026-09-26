@@ -1,6 +1,7 @@
 package org.apache.coyote.http11;
 
 import com.techcourse.exception.UncheckedServletException;
+import org.apache.catalina.controller.Controller;
 import org.apache.coyote.Processor;
 import org.apache.coyote.http11.enums.HttpMethod;
 import org.apache.coyote.http11.enums.HttpStatus;
@@ -26,15 +27,11 @@ public class Http11Processor implements Runnable, Processor {
     private static final String DEFAULT_VALUE = "Hello world!";
 
     private final Socket connection;
-    private final Map<Route, RequestHandler> handlers;
+    private final RequestMapping requestMapping;
 
-    public Http11Processor(final Socket connection) {
+    public Http11Processor(final Socket connection, RequestMapping requestMapping) {
         this.connection = connection;
-        this.handlers = Map.of(
-                new Route(HttpMethod.GET, "/login"), new LoginPageHandler(),
-                new Route(HttpMethod.POST, "/login"), new LoginRequestHandler(),
-                new Route(HttpMethod.POST, "/register"), new RegisterRequestHandler()
-        );
+        this.requestMapping = requestMapping;
     }
 
     @Override
@@ -59,28 +56,29 @@ public class Http11Processor implements Runnable, Processor {
             }
 
             final var responseBody = createResponseBody(responsePath);
-            httpResponse.setResponseBody(responseBody);
+            httpResponse.setBody(responseBody);
             final HttpResponseWriter httpResponseWriter = new HttpResponseWriter();
             String response = httpResponseWriter.write(httpRequest, httpResponse);
 
             log.info("mehtod: {} , path: {}, http status: {}",
-                    httpRequest.httpMethod(), responsePath, httpResponse.httpStatus().getMessage());
+                    httpRequest.httpMethod(), responsePath, httpResponse.status().getMessage());
 
             outputStream.write(response.getBytes());
             outputStream.flush();
-        } catch (IOException | URISyntaxException | UncheckedServletException e) {
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
-    private HttpResponse handleRequest(HttpRequest request) {
-        final RequestHandler requestHandler = handlers.get(new Route(request.httpMethod(), request.path()));
+    private HttpResponse handleRequest(HttpRequest request) throws Exception{
+        final Optional<Controller> controller = requestMapping.getController(request);
+        HttpResponse response = new HttpResponse();
 
-        if (requestHandler == null) {
-            return new HttpResponse(HttpStatus.OK, new HashMap<>(), new byte[0]);
+        if (controller.isPresent()) {
+            controller.get().service(request, response);
         }
 
-        return requestHandler.handle(request);
+        return response;
     }
 
     private byte[] createResponseBody(String responsePath) throws IOException, URISyntaxException {

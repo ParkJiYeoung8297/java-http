@@ -53,24 +53,20 @@ public class Http11Processor implements Runnable, Processor {
             HttpRequest httpRequest = httpRequestParser.parse(bufferedReader);
             HttpResponse httpResponse = handleRequest(httpRequest);
 
-            var header = new StringBuilder();
-            addResponseHeaderInfo(httpResponse, header);
+            String responsePath = httpRequest.path();
+            if (httpResponse.headers().containsKey("Location")){
+                responsePath = httpResponse.headers().get("Location");
+            }
 
-            final var responseBody = createResponseBody(httpResponse.path());
-            final String contentType = getContentType(httpResponse.path());
-
-            var response = new StringBuilder();
-            String responseLine = httpRequest.version() + " " + httpResponse.httpStatus().getMessage() + " ";
-            header.append(String.join("\r\n",
-                    "Content-Type: " + contentType + " ",
-                    "Content-Length: " + responseBody.length + " "));
-            String body = new String(responseBody);
-
-            response.append(String.join("\r\n", responseLine, header.toString() + "\r\n", body));
-
+            final var responseBody = createResponseBody(responsePath);
+            final HttpResponseWriter httpResponseWriter = new HttpResponseWriter();
+            String response = httpResponseWriter.write(httpRequest, httpResponse, responseBody);
+            
             log.info("mehtod: {} , path: {}, http status: {}",
-                    httpRequest.httpMethod(), httpResponse.path(), httpResponse.httpStatus().getMessage());
-            outputStream.write(response.toString().getBytes());
+                    httpRequest.httpMethod(), responsePath, httpResponse.httpStatus().getMessage());
+
+            System.out.println(response);
+            outputStream.write(response.getBytes());
             outputStream.flush();
         } catch (IOException | URISyntaxException | UncheckedServletException e) {
             log.error(e.getMessage(), e);
@@ -81,30 +77,16 @@ public class Http11Processor implements Runnable, Processor {
         final RequestHandler requestHandler = handlers.get(new Route(request.httpMethod(), request.path()));
 
         if (requestHandler == null) {
-            return new HttpResponse(request.path(), HttpStatus.OK, new HashMap<>());
+            return new HttpResponse(HttpStatus.OK, new HashMap<>(),"");
         }
 
         return requestHandler.handle(request);
     }
 
-    private void addResponseHeaderInfo(HttpResponse httpResponse, StringBuilder header) {
-        if (httpResponse.headers().containsKey("cookie")) {
-            header.append("Set-Cookie: JSESSIONID=")
-                    .append(httpResponse.headers().get("cookie"))
-                    .append("\r\n");
-        }
+    private byte[] createResponseBody(String responsePath) throws IOException, URISyntaxException {
+        String resourcePath = getResourcePath(responsePath);
 
-        if (httpResponse.headers().containsKey("Location")) {
-            header.append("Location: ")
-                    .append(httpResponse.headers().get("Location"))
-                    .append("\r\n");
-        }
-    }
-
-    private byte[] createResponseBody(String requestTarget) throws IOException, URISyntaxException {
-        String resourcePath = getResourcePath(requestTarget);
-
-        if (requestTarget.equals(DEFAULT_RESOURCE_PATH)) {
+        if (responsePath.equals(DEFAULT_RESOURCE_PATH)) {
             return DEFAULT_VALUE.getBytes();
         }
 
@@ -120,12 +102,5 @@ public class Http11Processor implements Runnable, Processor {
             resourcePath = resourcePath.concat(".html");
         }
         return resourcePath;
-    }
-
-    private String getContentType(String path) {
-        if (path.endsWith(".css")) {
-            return "text/css;charset=utf-8";
-        }
-        return "text/html;charset=utf-8";
     }
 }

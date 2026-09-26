@@ -1,7 +1,5 @@
 package org.apache.coyote.http11;
 
-import org.apache.coyote.http11.enums.HttpMethod;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URLDecoder;

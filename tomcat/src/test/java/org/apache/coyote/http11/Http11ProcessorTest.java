@@ -151,7 +151,7 @@ class Http11ProcessorTest {
     }
 
     @Test
-    void 비밀번호가_틀리면_401을_응답한다() {
+    void 비밀번호가_틀리면_401_페이지로_리다이렉트한다() {
         // given
         final String requestBody = "account=gugu&password=wrong";
         final String httpRequest = String.join("\r\n",
@@ -171,6 +171,6 @@ class Http11ProcessorTest {
 
         // then
         assertThat(socket.output())
-                .startsWith("HTTP/1.1 401 Unauthorized");
+                .startsWith("HTTP/1.1 303 See Other");
     }
 }

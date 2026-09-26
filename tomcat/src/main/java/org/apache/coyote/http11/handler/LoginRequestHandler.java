@@ -21,14 +21,22 @@ public class LoginRequestHandler implements RequestHandler {
     @Override
     public HttpResponse handle(HttpRequest httpRequest) {
         final Map<String, String> headers = new HashMap<>();
+        HttpStatus httpStatus = HttpStatus.FOUND;
+        String location = "/index.html";
+
         try {
             login(httpRequest, headers);
         } catch (IllegalArgumentException e) {
-            headers.put("Location", "/401.html");
-            return new HttpResponse("/401.html", HttpStatus.SEE_OTHER, headers);
+            location = "/401.html";
+            httpStatus = HttpStatus.SEE_OTHER;
         }
-        headers.put("Location", "/index.html");
-        return new HttpResponse("/index.html", HttpStatus.FOUND, headers);
+
+        headers.put("Location", location);
+
+        return HttpResponse.builder()
+                .httpStatus(httpStatus)
+                .headers(headers)
+                .build();
     }
 
     private void login(HttpRequest httpRequest, Map<String, String> headers) {
@@ -38,7 +46,7 @@ public class LoginRequestHandler implements RequestHandler {
         removeOldSession(httpRequest);
 
         String sessionId = saveSession(user);
-        headers.put("cookie", sessionId);
+        headers.put("Set-Cookie", "JSESSIONID="+sessionId);
     }
 
     private User getValidatedUser(Map<String, String> paramsMap) {
@@ -57,7 +65,7 @@ public class LoginRequestHandler implements RequestHandler {
 
     private void removeOldSession(HttpRequest httpRequest) {
         final HttpCookie cookie = new HttpCookie(
-                httpRequest.headers().getOrDefault("cookie", "")
+                httpRequest.headers().getOrDefault("Set-Cookie", "")
         );
 
         try {

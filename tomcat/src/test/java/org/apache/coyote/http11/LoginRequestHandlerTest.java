@@ -25,12 +25,12 @@ class LoginRequestHandlerTest {
         // then
         assertThat(response.httpStatus())
                 .isEqualTo(HttpStatus.FOUND);
-        assertThat(response.path())
-                .isEqualTo("/index.html");
+        assertThat(response.headers())
+                .containsEntry("Location", "/index.html");
     }
 
     @Test
-    void 비밀번호가_일치하지_않으면_401을_반환한다() {
+    void 비밀번호가_일치하지_않으면_401_페이지로_리다이렉트한다() {
         // given
         final LoginRequestHandler loginRequestHandler =
                 new LoginRequestHandler();
@@ -42,9 +42,9 @@ class LoginRequestHandlerTest {
 
         // then
         assertThat(response.httpStatus())
-                .isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.path())
-                .isEqualTo("/401.html");
+                .isEqualTo(HttpStatus.SEE_OTHER);
+        assertThat(response.headers())
+                .containsEntry("Location", "/401.html");
     }
 
     private HttpRequest createLoginRequest(

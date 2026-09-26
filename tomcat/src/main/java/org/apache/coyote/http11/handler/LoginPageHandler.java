@@ -16,13 +16,15 @@ public class LoginPageHandler implements RequestHandler {
     @Override
     public HttpResponse handle(HttpRequest httpRequest) {
         final Map<String, String> headers = new HashMap<>();
+        HttpStatus httpStatus = HttpStatus.OK;
 
         if (isLoggedIn(httpRequest)) {
             headers.put("Location", "/index.html");
-            return new HttpResponse("/index.html", HttpStatus.FOUND, headers);
         }
-
-        return new HttpResponse("/login", HttpStatus.OK, headers);
+        return HttpResponse.builder()
+                .httpStatus(httpStatus)
+                .headers(headers)
+                .build();
     }
 
     private boolean isLoggedIn(HttpRequest httpRequest) {

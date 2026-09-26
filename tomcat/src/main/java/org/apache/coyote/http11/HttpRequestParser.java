@@ -4,6 +4,8 @@ import org.apache.coyote.http11.enums.HttpMethod;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class HttpRequestParser {
@@ -76,7 +78,10 @@ public class HttpRequestParser {
         String[] data = str.split("\\&");
         for (String d : data) {
             String[] param = d.split("\\=");
-            paramsMap.put(param[0], param[1]);
+            String key = URLDecoder.decode(param[0], StandardCharsets.UTF_8);
+            String value = URLDecoder.decode(param[1], StandardCharsets.UTF_8);
+
+            paramsMap.put(key, value);
         }
         return paramsMap;
     }

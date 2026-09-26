@@ -25,7 +25,7 @@ public class LoginRequestHandler implements RequestHandler {
             login(httpRequest, headers);
         } catch (IllegalArgumentException e) {
             headers.put("Location", "/401.html");
-            return new HttpResponse("/401.html", HttpStatus.UNAUTHORIZED, headers);
+            return new HttpResponse("/401.html", HttpStatus.SEE_OTHER, headers);
         }
         headers.put("Location", "/index.html");
         return new HttpResponse("/index.html", HttpStatus.FOUND, headers);

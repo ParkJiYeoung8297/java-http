@@ -11,7 +11,6 @@ import org.apache.coyote.http11.enums.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,33 +19,30 @@ public class LoginRequestHandler implements RequestHandler {
 
     @Override
     public HttpResponse handle(HttpRequest httpRequest) {
-        final Map<String, String> headers = new HashMap<>();
-        HttpStatus httpStatus = HttpStatus.FOUND;
+        final HttpResponse response = new HttpResponse();
+        response.setStatus(HttpStatus.FOUND);
         String location = "/index.html";
 
         try {
-            login(httpRequest, headers);
+            login(httpRequest, response);
         } catch (IllegalArgumentException e) {
             location = "/401.html";
-            httpStatus = HttpStatus.SEE_OTHER;
+            response.setStatus(HttpStatus.SEE_OTHER);
         }
 
-        headers.put("Location", location);
+        response.addHeader("Location", location);
 
-        return HttpResponse.builder()
-                .httpStatus(httpStatus)
-                .headers(headers)
-                .build();
+        return response;
     }
 
-    private void login(HttpRequest httpRequest, Map<String, String> headers) {
+    private void login(HttpRequest httpRequest, HttpResponse response) {
         User user = getValidatedUser(httpRequest.params());
         log.info("user: {}", user.toString());
 
         removeOldSession(httpRequest);
 
         String sessionId = saveSession(user);
-        headers.put("Set-Cookie", "JSESSIONID="+sessionId);
+        response.addHeader("Set-Cookie", "JSESSIONID=" + sessionId);
     }
 
     private User getValidatedUser(Map<String, String> paramsMap) {

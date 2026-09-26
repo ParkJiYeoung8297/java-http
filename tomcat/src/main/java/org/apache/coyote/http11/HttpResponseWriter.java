@@ -10,8 +10,8 @@ public class HttpResponseWriter {
     public String write(HttpRequest httpRequest, HttpResponse httpResponse) {
         StringBuilder response = new StringBuilder();
         String responseLine = mergeResponseLine(httpRequest, httpResponse);
-        String header = mergeHeader(httpRequest, httpResponse, httpResponse.responseBody());
-        String body = new String(httpResponse.responseBody(), StandardCharsets.UTF_8);
+        String header = mergeHeader(httpRequest, httpResponse, httpResponse.body());
+        String body = new String(httpResponse.body(), StandardCharsets.UTF_8);
 
         response.append(responseLine)
                 .append(" \r\n")
@@ -22,7 +22,7 @@ public class HttpResponseWriter {
     }
 
     private String mergeResponseLine(HttpRequest httpRequest, HttpResponse httpResponse) {
-        HttpStatus httpStatus = httpResponse.httpStatus();
+        HttpStatus httpStatus = httpResponse.status();
         return String.join(" ",
                 httpRequest.version(), httpStatus.getCode(), httpStatus.getMessage());
     }

@@ -8,23 +8,17 @@ import org.apache.coyote.http11.HttpRequest;
 import org.apache.coyote.http11.HttpResponse;
 import org.apache.coyote.http11.enums.HttpStatus;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class LoginPageHandler implements RequestHandler {
 
     @Override
     public HttpResponse handle(HttpRequest httpRequest) {
-        final Map<String, String> headers = new HashMap<>();
-        HttpStatus httpStatus = HttpStatus.OK;
+        final HttpResponse response = new HttpResponse();
+        response.setStatus(HttpStatus.OK);
 
         if (isLoggedIn(httpRequest)) {
-            headers.put("Location", "/index.html");
+            response.addHeader("Location", "/index.html");
         }
-        return HttpResponse.builder()
-                .httpStatus(httpStatus)
-                .headers(headers)
-                .build();
+        return response;
     }
 
     private boolean isLoggedIn(HttpRequest httpRequest) {
